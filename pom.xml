@@ -5,7 +5,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.activiti</groupId>
   <artifactId>activiti-parent</artifactId>
-  <version>8.8.0-SNAPSHOT</version>
+  <version>9.0.0-SNAPSHOT</version>
   <packaging>pom</packaging>
   <name>Activiti :: Parent</name>
   <description>${project.name}</description>
@@ -190,7 +190,7 @@
     <project.year>2026</project.year>
 
     <java.release>${java.version}</java.release>
-    <java.version>21</java.version>
+    <java.version>25</java.version>
     <maven.compiler.release>${java.release}</maven.compiler.release>
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
