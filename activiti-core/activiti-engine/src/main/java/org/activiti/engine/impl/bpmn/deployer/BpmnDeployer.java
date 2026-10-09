@@ -15,8 +15,6 @@
  */
 package org.activiti.engine.impl.bpmn.deployer;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,6 +43,8 @@ import org.activiti.engine.repository.ProcessDefinition;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 public class BpmnDeployer implements Deployer {
 
@@ -254,12 +254,12 @@ public class BpmnDeployer implements Deployer {
         for (ProcessDefinitionEntity processDefinitionEntity : parsedDeployment.getAllProcessDefinitions()) {
             log.info(
                 "Process deployed: {id: " +
-                processDefinitionEntity.getId() +
-                ", key: " +
-                processDefinitionEntity.getKey() +
-                ", name: " +
-                processDefinitionEntity.getName() +
-                " }"
+                    processDefinitionEntity.getId() +
+                    ", key: " +
+                    processDefinitionEntity.getKey() +
+                    ", name: " +
+                    processDefinitionEntity.getName() +
+                    " }"
             );
             if (commandContext.getProcessEngineConfiguration().getEventDispatcher().isEnabled()) {
                 commandContext
@@ -417,8 +417,7 @@ public class BpmnDeployer implements Deployer {
                                     "description",
                                     documentation,
                                     infoNode
-                                ) ==
-                                false
+                                ) == false
                             ) {
                                 dynamicBpmnService.changeLocalizationDescription(
                                     locale,
@@ -514,8 +513,7 @@ public class BpmnDeployer implements Deployer {
                                 DynamicBpmnConstants.LOCALIZATION_NAME,
                                 name,
                                 infoNode
-                            ) ==
-                            false
+                            ) == false
                         ) {
                             dynamicBpmnService.changeLocalizationName(locale, dataObject.getId(), name, infoNode);
                             localizationValuesChanged = true;
@@ -529,8 +527,7 @@ public class BpmnDeployer implements Deployer {
                                 DynamicBpmnConstants.LOCALIZATION_DESCRIPTION,
                                 documentation,
                                 infoNode
-                            ) ==
-                            false
+                            ) == false
                         ) {
                             dynamicBpmnService.changeLocalizationDescription(
                                 locale,

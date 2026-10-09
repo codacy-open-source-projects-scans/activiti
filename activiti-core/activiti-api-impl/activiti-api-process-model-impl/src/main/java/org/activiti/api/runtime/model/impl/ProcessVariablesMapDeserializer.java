@@ -16,15 +16,15 @@
 package org.activiti.api.runtime.model.impl;
 
 import java.util.function.Supplier;
-import tools.jackson.core.JsonParser;
-import tools.jackson.databind.DeserializationContext;
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.convert.ConversionService;
 import tools.jackson.core.JacksonException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ValueDeserializer;
+import tools.jackson.databind.json.JsonMapper;
 
 public class ProcessVariablesMapDeserializer extends ValueDeserializer<ProcessVariablesMap<String, Object>> {
 
@@ -44,8 +44,8 @@ public class ProcessVariablesMapDeserializer extends ValueDeserializer<ProcessVa
         ProcessVariablesMap<String, Object> map = new ProcessVariablesMap<>();
 
         JsonNode node = ctxt.readTree(jp);
-        node
-            .properties().iterator()
+        node.properties()
+            .iterator()
             .forEachRemaining(entry -> {
                 String name = entry.getKey();
                 JsonNode entryValue = entry.getValue();
@@ -65,7 +65,6 @@ public class ProcessVariablesMapDeserializer extends ValueDeserializer<ProcessVa
                             result = ObjectValue.class.cast(result).getObject();
                         }
                         map.put(name, result);
-
                     } else {
                         Object value = null;
                         try {

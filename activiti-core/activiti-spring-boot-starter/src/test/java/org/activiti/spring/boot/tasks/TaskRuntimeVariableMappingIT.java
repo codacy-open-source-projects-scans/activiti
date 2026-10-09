@@ -453,11 +453,11 @@ public class TaskRuntimeVariableMappingIT {
 
     private void waitForTaskOnProcessInstance(ProcessInstance processInstance, String taskName) {
         await().untilAsserted(() -> {
-                securityUtil.logInAs("user");
-                assertThat(taskBaseRuntime.getTasksByProcessInstanceId(processInstance.getId()))
-                    .extracting(Task::getName)
-                    .containsExactly(taskName);
-            });
+            securityUtil.logInAs("user");
+            assertThat(taskBaseRuntime.getTasksByProcessInstanceId(processInstance.getId()))
+                .extracting(Task::getName)
+                .containsExactly(taskName);
+        });
     }
 
     @Test
@@ -483,7 +483,9 @@ public class TaskRuntimeVariableMappingIT {
 
         //the task variables are updated based on the input mapping
         tasks = taskBaseRuntime.getTasksByProcessInstanceId(processInstance.getId());
-        final List<VariableInstance> taskVariables = taskBaseRuntime.getTasksVariablesByTaskId(tasks.getFirst().getId());
+        final List<VariableInstance> taskVariables = taskBaseRuntime.getTasksVariablesByTaskId(
+            tasks.getFirst().getId()
+        );
         assertThat(taskVariables)
             .extracting(VariableInstance::getName, VariableInstance::getValue)
             .containsExactly(tuple("outputText", "From output connector"));
@@ -512,7 +514,9 @@ public class TaskRuntimeVariableMappingIT {
 
         //the task variables are updated based on the input mapping
         tasks = taskBaseRuntime.getTasksByProcessInstanceId(processInstance.getId());
-        final List<VariableInstance> taskVariables = taskBaseRuntime.getTasksVariablesByTaskId(tasks.getFirst().getId());
+        final List<VariableInstance> taskVariables = taskBaseRuntime.getTasksVariablesByTaskId(
+            tasks.getFirst().getId()
+        );
         assertThat(taskVariables)
             .extracting(VariableInstance::getName, VariableInstance::getValue)
             .containsExactly(tuple("outputText", "From child"));

@@ -515,7 +515,9 @@ public class DefaultProcessDiagramGenerator implements ProcessDiagramGenerator {
                                 graphicInfo,
                                 boundaryEvent.isCancelActivity()
                             );
-                        } else if (boundaryEvent.getEventDefinitions().getFirst() instanceof CompensateEventDefinition) {
+                        } else if (
+                            boundaryEvent.getEventDefinitions().getFirst() instanceof CompensateEventDefinition
+                        ) {
                             processDiagramCanvas.drawCatchingCompensateEvent(
                                 flowNode.getId(),
                                 graphicInfo,
@@ -1047,7 +1049,7 @@ public class DefaultProcessDiagramGenerator implements ProcessDiagramGenerator {
 
         // Outgoing transitions of activity
         for (SequenceFlow sequenceFlow : flowNode.getOutgoingFlows()) {
-            boolean highLighted = (highLightedFlows.contains(sequenceFlow.getId()));
+            boolean highLighted = highLightedFlows.contains(sequenceFlow.getId());
             String defaultFlow = null;
             if (flowNode instanceof Activity) {
                 defaultFlow = ((Activity) flowNode).getDefaultFlow();
@@ -1196,7 +1198,7 @@ public class DefaultProcessDiagramGenerator implements ProcessDiagramGenerator {
 
             length += Math.sqrt(
                 Math.pow((int) graphicInfo.getX() - (int) previousGraphicInfo.getX(), 2) +
-                Math.pow((int) graphicInfo.getY() - (int) previousGraphicInfo.getY(), 2)
+                    Math.pow((int) graphicInfo.getY() - (int) previousGraphicInfo.getY(), 2)
             );
             lengths[i] = length;
         }

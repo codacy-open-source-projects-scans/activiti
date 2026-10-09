@@ -67,7 +67,7 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
         ((DefaultHistoryManager) processEngineConfiguration.getHistoryManager()).setHistoryLevel(HistoryLevel.AUDIT);
 
         // The time interceptor should be first
-        CommandExecutorImpl commandExecutor = ((CommandExecutorImpl) processEngineConfiguration.getCommandExecutor());
+        CommandExecutorImpl commandExecutor = (CommandExecutorImpl) processEngineConfiguration.getCommandExecutor();
         this.oldFirstCommandInterceptor = commandExecutor.getFirst();
 
         TotalExecutionTimeCommandInterceptor timeCommandInterceptor = new TotalExecutionTimeCommandInterceptor();
@@ -123,7 +123,13 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
     public void testStartToEnd() {
         deployStartProcessInstanceAndProfile("process01.bpmn20.xml", "process01");
 
-        assertDatabaseSelects("StartProcessInstanceCmd", "selectLatestProcessDefinitionByKey", 1L, "selectIdentityLinksByProcessInstance", 1L);
+        assertDatabaseSelects(
+            "StartProcessInstanceCmd",
+            "selectLatestProcessDefinitionByKey",
+            1L,
+            "selectIdentityLinksByProcessInstance",
+            1L
+        );
 
         assertDatabaseInserts(
             "StartProcessInstanceCmd",
@@ -145,7 +151,15 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
             "process-variables-servicetask01"
         );
 
-        assertDatabaseSelects("StartProcessInstanceCmd", "selectLatestProcessDefinitionByKey", 1L, "selectIdentityLinksByProcessInstance", 1L, "selectVariablesByExecutionId", 1L);
+        assertDatabaseSelects(
+            "StartProcessInstanceCmd",
+            "selectLatestProcessDefinitionByKey",
+            1L,
+            "selectIdentityLinksByProcessInstance",
+            1L,
+            "selectVariablesByExecutionId",
+            1L
+        );
         assertDatabaseInserts(
             "StartProcessInstanceCmd",
             "HistoricVariableInstanceEntityImpl-bulk-with-4",
@@ -167,7 +181,15 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
             "process-variables-servicetask02"
         );
 
-        assertDatabaseSelects("StartProcessInstanceCmd", "selectLatestProcessDefinitionByKey", 1L, "selectIdentityLinksByProcessInstance", 1L, "selectVariablesByExecutionId", 1L);
+        assertDatabaseSelects(
+            "StartProcessInstanceCmd",
+            "selectLatestProcessDefinitionByKey",
+            1L,
+            "selectIdentityLinksByProcessInstance",
+            1L,
+            "selectVariablesByExecutionId",
+            1L
+        );
         assertDatabaseInserts(
             "StartProcessInstanceCmd",
             "HistoricVariableInstanceEntityImpl-bulk-with-50",
@@ -186,7 +208,13 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
     public void testOnlyPassThroughs() {
         deployStartProcessInstanceAndProfile("process02.bpmn20.xml", "process02");
 
-        assertDatabaseSelects("StartProcessInstanceCmd", "selectLatestProcessDefinitionByKey", 1L, "selectIdentityLinksByProcessInstance", 1L);
+        assertDatabaseSelects(
+            "StartProcessInstanceCmd",
+            "selectLatestProcessDefinitionByKey",
+            1L,
+            "selectIdentityLinksByProcessInstance",
+            1L
+        );
         assertDatabaseInserts(
             "StartProcessInstanceCmd",
             "HistoricActivityInstanceEntityImpl-bulk-with-9",
@@ -203,7 +231,13 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
     public void testParallelForkAndJoin() {
         deployStartProcessInstanceAndProfile("process03.bpmn20.xml", "process03");
 
-        assertDatabaseSelects("StartProcessInstanceCmd", "selectLatestProcessDefinitionByKey", 1L, "selectIdentityLinksByProcessInstance", 1L);
+        assertDatabaseSelects(
+            "StartProcessInstanceCmd",
+            "selectLatestProcessDefinitionByKey",
+            1L,
+            "selectIdentityLinksByProcessInstance",
+            1L
+        );
         assertDatabaseInserts(
             "StartProcessInstanceCmd",
             "HistoricActivityInstanceEntityImpl-bulk-with-7",
@@ -220,7 +254,13 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
     public void testNestedParallelForkAndJoin() {
         deployStartProcessInstanceAndProfile("process04.bpmn20.xml", "process04");
 
-        assertDatabaseSelects("StartProcessInstanceCmd", "selectLatestProcessDefinitionByKey", 1L, "selectIdentityLinksByProcessInstance", 1L);
+        assertDatabaseSelects(
+            "StartProcessInstanceCmd",
+            "selectLatestProcessDefinitionByKey",
+            1L,
+            "selectIdentityLinksByProcessInstance",
+            1L
+        );
         assertDatabaseInserts(
             "StartProcessInstanceCmd",
             "HistoricActivityInstanceEntityImpl-bulk-with-21",
@@ -237,7 +277,15 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
     public void testExlusiveGateway() {
         deployStartProcessInstanceAndProfile("process05.bpmn20.xml", "process05");
 
-        assertDatabaseSelects("StartProcessInstanceCmd", "selectLatestProcessDefinitionByKey", 1L, "selectIdentityLinksByProcessInstance", 1L, "selectVariablesByExecutionId", 1L);
+        assertDatabaseSelects(
+            "StartProcessInstanceCmd",
+            "selectLatestProcessDefinitionByKey",
+            1L,
+            "selectIdentityLinksByProcessInstance",
+            1L,
+            "selectVariablesByExecutionId",
+            1L
+        );
         assertDatabaseInserts(
             "StartProcessInstanceCmd",
             "HistoricActivityInstanceEntityImpl-bulk-with-5",
@@ -308,7 +356,8 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
             1L,
             "selectTasksByExecutionId",
             1L,
-            "selectIdentityLinksByProcessInstance", 1L
+            "selectIdentityLinksByProcessInstance",
+            1L
         );
         assertDatabaseInserts("CompleteTaskCmd", "HistoricActivityInstanceEntityImpl", 1L);
         assertNoUpdates("CompleteTaskCmd");
@@ -332,7 +381,9 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
         assertThat(allStats).hasSize(commands.length);
 
         for (String command : commands) {
-            assertThat(getStatsForCommand(command, allStats)).as("Could not get stats for " + command).isNotNull();
+            assertThat(getStatsForCommand(command, allStats))
+                .as("Could not get stats for " + command)
+                .isNotNull();
         }
     }
 
@@ -344,7 +395,9 @@ public class VerifyDatabaseOperationsTest extends PluggableActivitiTestCase {
             String dbSelect = (String) expectedSelects[i];
             Long count = (Long) expectedSelects[i + 1];
 
-            assertThat(stats.getDbSelects().get(dbSelect)).as("Wrong select count for " + dbSelect).isEqualTo(count);
+            assertThat(stats.getDbSelects().get(dbSelect))
+                .as("Wrong select count for " + dbSelect)
+                .isEqualTo(count);
         }
     }
 

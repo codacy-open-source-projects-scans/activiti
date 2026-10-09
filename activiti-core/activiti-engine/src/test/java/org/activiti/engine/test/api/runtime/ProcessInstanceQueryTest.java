@@ -22,7 +22,6 @@ import static java.util.Collections.singletonMap;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
 
-import tools.jackson.databind.node.ObjectNode;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -43,6 +42,7 @@ import org.activiti.engine.runtime.Execution;
 import org.activiti.engine.runtime.ProcessInstance;
 import org.activiti.engine.runtime.ProcessInstanceQuery;
 import org.activiti.engine.test.Deployment;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
  */
@@ -1826,10 +1826,16 @@ public class ProcessInstanceQueryTest extends PluggableActivitiTestCase {
         assertThat(resultInstance.getId()).isEqualTo(processInstance3.getId());
 
         assertThat(
-            runtimeService.createProcessInstanceQuery().variableValueGreaterThan("shortVar", (short) 5555).count()
+            runtimeService
+                .createProcessInstanceQuery()
+                .variableValueGreaterThan("shortVar", (short) 5555)
+                .count()
         ).isEqualTo(0);
         assertThat(
-            runtimeService.createProcessInstanceQuery().variableValueGreaterThan("shortVar", (short) 1).count()
+            runtimeService
+                .createProcessInstanceQuery()
+                .variableValueGreaterThan("shortVar", (short) 1)
+                .count()
         ).isEqualTo(3);
 
         // Test GREATER_THAN_OR_EQUAL
@@ -1848,7 +1854,10 @@ public class ProcessInstanceQueryTest extends PluggableActivitiTestCase {
         assertThat(resultInstance.getId()).isEqualTo(processInstance3.getId());
 
         assertThat(
-            runtimeService.createProcessInstanceQuery().variableValueGreaterThanOrEqual("shortVar", (short) 1).count()
+            runtimeService
+                .createProcessInstanceQuery()
+                .variableValueGreaterThanOrEqual("shortVar", (short) 1)
+                .count()
         ).isEqualTo(3);
 
         // Test LESS_THAN
@@ -1866,10 +1875,16 @@ public class ProcessInstanceQueryTest extends PluggableActivitiTestCase {
         assertThat(ids.isEmpty()).isTrue();
 
         assertThat(
-            runtimeService.createProcessInstanceQuery().variableValueLessThan("shortVar", (short) 1234).count()
+            runtimeService
+                .createProcessInstanceQuery()
+                .variableValueLessThan("shortVar", (short) 1234)
+                .count()
         ).isEqualTo(0);
         assertThat(
-            runtimeService.createProcessInstanceQuery().variableValueLessThan("shortVar", (short) 6666).count()
+            runtimeService
+                .createProcessInstanceQuery()
+                .variableValueLessThan("shortVar", (short) 6666)
+                .count()
         ).isEqualTo(3);
 
         // Test LESS_THAN_OR_EQUAL
@@ -1880,22 +1895,34 @@ public class ProcessInstanceQueryTest extends PluggableActivitiTestCase {
         assertThat(processInstances).hasSize(3);
 
         assertThat(
-            runtimeService.createProcessInstanceQuery().variableValueLessThanOrEqual("shortVar", (short) 1233).count()
+            runtimeService
+                .createProcessInstanceQuery()
+                .variableValueLessThanOrEqual("shortVar", (short) 1233)
+                .count()
         ).isEqualTo(0);
 
         // Test value-only matching
-        resultInstance = runtimeService.createProcessInstanceQuery().variableValueEquals((short) 5555).singleResult();
+        resultInstance = runtimeService
+            .createProcessInstanceQuery()
+            .variableValueEquals((short) 5555)
+            .singleResult();
         assertThat(resultInstance).isNotNull();
         assertThat(resultInstance.getId()).isEqualTo(processInstance3.getId());
 
-        processInstances = runtimeService.createProcessInstanceQuery().variableValueEquals((short) 1234).list();
+        processInstances = runtimeService
+            .createProcessInstanceQuery()
+            .variableValueEquals((short) 1234)
+            .list();
         assertThat(processInstances).hasSize(2);
         expectedIds = asList(processInstance1.getId(), processInstance2.getId());
         ids = new ArrayList<String>(asList(processInstances.getFirst().getId(), processInstances.get(1).getId()));
         ids.removeAll(expectedIds);
         assertThat(ids.isEmpty()).isTrue();
 
-        resultInstance = runtimeService.createProcessInstanceQuery().variableValueEquals((short) 999).singleResult();
+        resultInstance = runtimeService
+            .createProcessInstanceQuery()
+            .variableValueEquals((short) 999)
+            .singleResult();
         assertThat(resultInstance).isNull();
 
         runtimeService.deleteProcessInstance(processInstance1.getId(), "test");
@@ -2678,7 +2705,9 @@ public class ProcessInstanceQueryTest extends PluggableActivitiTestCase {
             .list();
         assertThat(processes).hasSize(1);
         assertThat(processes.getFirst().getName()).isEqualTo("The One Task Process 'en-GB' localized name");
-        assertThat(processes.getFirst().getDescription()).isEqualTo("The One Task Process 'en-GB' localized description");
+        assertThat(processes.getFirst().getDescription()).isEqualTo(
+            "The One Task Process 'en-GB' localized description"
+        );
 
         processes = runtimeService
             .createProcessInstanceQuery()
@@ -2704,7 +2733,9 @@ public class ProcessInstanceQueryTest extends PluggableActivitiTestCase {
             .listPage(0, 10);
         assertThat(processes).hasSize(1);
         assertThat(processes.getFirst().getName()).isEqualTo("The One Task Process 'en-GB' localized name");
-        assertThat(processes.getFirst().getDescription()).isEqualTo("The One Task Process 'en-GB' localized description");
+        assertThat(processes.getFirst().getDescription()).isEqualTo(
+            "The One Task Process 'en-GB' localized description"
+        );
 
         processInstance = runtimeService
             .createProcessInstanceQuery()

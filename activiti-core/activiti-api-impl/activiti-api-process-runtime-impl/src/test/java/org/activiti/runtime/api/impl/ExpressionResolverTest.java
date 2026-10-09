@@ -22,9 +22,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ObjectNode;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +35,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ObjectNode;
 
 @ExtendWith(MockitoExtension.class)
 public class ExpressionResolverTest {
@@ -164,6 +164,48 @@ public class ExpressionResolverTest {
 
         //then
         assertThat(containsExpression).isTrue();
+    }
+
+    @Test
+    public void findVariableNamesContainingExpressions_should_returnEmptyList_when_sourceIsNull() {
+        //when
+        List<String> result = expressionResolver.findVariableNamesContainingExpressions(null);
+
+        //then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    public void findVariableNamesContainingExpressions_should_returnEmptyList_when_noVariableContainsExpression() {
+        //given
+        Map<String, Object> source = map("name", "John", "age", 30);
+
+        //when
+        List<String> result = expressionResolver.findVariableNamesContainingExpressions(source);
+
+        //then
+        assertThat(result).isEmpty();
+    }
+
+    @Test
+    public void findVariableNamesContainingExpressions_should_returnVariableNames_when_someVariablesContainExpressions() {
+        //given
+        Map<String, Object> source = map(
+            "name",
+            "${name}",
+            "age",
+            30,
+            "place",
+            "${place}",
+            "list",
+            asList("first", "${item}")
+        );
+
+        //when
+        List<String> result = expressionResolver.findVariableNamesContainingExpressions(source);
+
+        //then
+        assertThat(result).containsExactlyInAnyOrder("name", "place", "list");
     }
 
     @Test

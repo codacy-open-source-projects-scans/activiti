@@ -92,11 +92,10 @@ public class ProcessAdminRuntimeImpl implements ProcessAdminRuntime {
     @Override
     public ProcessDefinition processDefinition(String processDefinitionId) {
         org.activiti.engine.repository.ProcessDefinition processDefinition;
-        processDefinition = Optional.ofNullable(repositoryService
-                .createProcessDefinitionQuery()
-                .processDefinitionId(processDefinitionId)
-                .singleResult())
-            .orElseGet(() -> repositoryService
+        processDefinition = Optional.ofNullable(
+            repositoryService.createProcessDefinitionQuery().processDefinitionId(processDefinitionId).singleResult()
+        ).orElseGet(() ->
+            repositoryService
                 .createProcessDefinitionQuery()
                 .processDefinitionIdOrKey(processDefinitionId)
                 .deploymentIds(latestDeploymentIds())
@@ -110,7 +109,7 @@ public class ProcessAdminRuntimeImpl implements ProcessAdminRuntime {
                         "Unable to find process definition for the given id or key:'" + processDefinitionId + "'"
                     )
                 )
-            );
+        );
 
         return processDefinitionConverter.from(processDefinition);
     }

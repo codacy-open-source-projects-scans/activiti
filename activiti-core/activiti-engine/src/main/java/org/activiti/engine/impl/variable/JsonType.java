@@ -15,11 +15,11 @@
  */
 package org.activiti.engine.impl.variable;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
 
 public class JsonType implements VariableType {
 
@@ -83,8 +83,9 @@ public class JsonType implements VariableType {
         }
 
         if (JsonNode.class.isAssignableFrom(value.getClass()) || serializePOJOsInVariablesToJson) {
-            try {
-                return jsonMapper.writeValueAsString(value).length() <= maxLength;
+            try (var writer = new CountingWriter()) {
+                jsonMapper.writeValue(writer, value);
+                return writer.getCharacterCount() <= maxLength;
             } catch (JacksonException e) {
                 logger.error("Error writing json variable of type " + value.getClass(), e);
             }

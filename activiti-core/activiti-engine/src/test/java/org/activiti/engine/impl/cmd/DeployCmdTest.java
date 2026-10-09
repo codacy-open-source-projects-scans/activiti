@@ -33,14 +33,17 @@ import org.activiti.engine.impl.persistence.entity.DeploymentEntityManager;
 import org.activiti.engine.impl.repository.DeploymentBuilderImpl;
 import org.activiti.engine.repository.Deployment;
 import org.activiti.engine.runtime.Clock;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.junit.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 public class DeployCmdTest {
 
     private static final int ENFORCED_DEPLOYMENT_VERSION = 7;
@@ -69,7 +72,7 @@ public class DeployCmdTest {
     @InjectMocks
     private DeployCmd deployCmd;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
         given(commandContext.getProcessEngineConfiguration()).willReturn(processEngineConfiguration);
         given(commandContext.getDeploymentEntityManager()).willReturn(deploymentEntityManager);
@@ -85,7 +88,7 @@ public class DeployCmdTest {
         Deployment deployment = deployCmd.executeDeploy(commandContext);
 
         assertThat(((DeploymentEntity) deployment).isNew()).isTrue();
-        assertThat((deployment).getVersion()).isEqualTo(1);
+        assertThat(deployment.getVersion()).isEqualTo(1);
 
         verify(deploymentEntityManager).insert((DeploymentEntity) deployment);
         verify(deploymentManager).deploy((DeploymentEntity) deployment, buildDeploymentSettings());
@@ -102,7 +105,7 @@ public class DeployCmdTest {
         Deployment deployment = deployCmd.executeDeploy(commandContext);
 
         assertThat(((DeploymentEntity) deployment).isNew()).isFalse();
-        assertThat((deployment).getVersion()).isEqualTo(ENFORCED_DEPLOYMENT_VERSION);
+        assertThat(deployment.getVersion()).isEqualTo(ENFORCED_DEPLOYMENT_VERSION);
 
         verify(deploymentEntityManager, never()).insert((DeploymentEntity) deployment);
         verify(deploymentManager, never()).deploy((DeploymentEntity) deployment, buildDeploymentSettings());
@@ -127,7 +130,7 @@ public class DeployCmdTest {
 
         assertThat(deployment.getName()).isEqualTo(existingDeployment.getName());
         assertThat(((DeploymentEntity) deployment).isNew()).isFalse();
-        assertThat((deployment).getVersion()).isEqualTo(ENFORCED_DEPLOYMENT_VERSION);
+        assertThat(deployment.getVersion()).isEqualTo(ENFORCED_DEPLOYMENT_VERSION);
 
         verify(deploymentEntityManager).findDeploymentByVersion(ENFORCED_DEPLOYMENT_VERSION);
 
@@ -172,6 +175,6 @@ public class DeployCmdTest {
         given(deploymentBuilder.hasEnforcedAppVersion()).willReturn(false);
 
         Deployment deployment = deployCmd.executeDeploy(commandContext);
-        assertThat((deployment).getVersion()).isEqualTo(ENFORCED_DEPLOYMENT_VERSION);
+        assertThat(deployment.getVersion()).isEqualTo(ENFORCED_DEPLOYMENT_VERSION);
     }
 }

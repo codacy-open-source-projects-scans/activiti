@@ -15,10 +15,6 @@
  */
 package org.activiti.editor.language.json.converter;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.ArrayNode;
-import tools.jackson.databind.node.ObjectNode;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -64,6 +60,10 @@ import org.activiti.editor.language.json.model.ModelInfo;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.ArrayNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
 
@@ -72,7 +72,7 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(BpmnJsonConverter.class);
 
-    protected JsonMapper jsonMapper = new JsonMapper();
+    protected final JsonMapper jsonMapper;
 
     protected static Map<Class<? extends BaseElement>, Class<? extends BaseBpmnJsonConverter>> convertersToJsonMap =
         new HashMap<Class<? extends BaseElement>, Class<? extends BaseBpmnJsonConverter>>();
@@ -185,6 +185,10 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
         DI_GATEWAY.add(STENCIL_GATEWAY_PARALLEL);
     }
 
+    public BpmnJsonConverter(JsonMapper jsonMapper) {
+        this.jsonMapper = jsonMapper;
+    }
+
     public ObjectNode convertToJson(BpmnModel model) {
         return convertToJson(model, null, null);
     }
@@ -198,11 +202,11 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
         double maxX = 0.0;
         double maxY = 0.0;
         for (GraphicInfo flowInfo : model.getLocationMap().values()) {
-            if ((flowInfo.getX() + flowInfo.getWidth()) > maxX) {
+            if (flowInfo.getX() + flowInfo.getWidth() > maxX) {
                 maxX = flowInfo.getX() + flowInfo.getWidth();
             }
 
-            if ((flowInfo.getY() + flowInfo.getHeight()) > maxY) {
+            if (flowInfo.getY() + flowInfo.getHeight() > maxY) {
                 maxY = flowInfo.getY() + flowInfo.getHeight();
             }
         }
@@ -444,7 +448,9 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
         Class<? extends BaseBpmnJsonConverter> converter = convertersToJsonMap.get(flowElement.getClass());
         if (converter != null) {
             try {
-                BaseBpmnJsonConverter converterInstance = converter.getDeclaredConstructor().newInstance();
+                BaseBpmnJsonConverter converterInstance = converter
+                    .getDeclaredConstructor(JsonMapper.class)
+                    .newInstance(this.jsonMapper);
                 if (converterInstance instanceof FormKeyAwareConverter) {
                     ((FormKeyAwareConverter) converterInstance).setFormKeyMap(formKeyMap);
                 }
@@ -479,8 +485,8 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
             if (converter != null) {
                 try {
                     converter
-                        .getDeclaredConstructor()
-                        .newInstance()
+                        .getDeclaredConstructor(JsonMapper.class)
+                        .newInstance(this.jsonMapper)
                         .convertToJson(artifact, this, model, container, shapesArrayNode, containerX, containerY);
                 } catch (Exception e) {
                     LOGGER.error("Error converting {}", artifact, e);
@@ -491,7 +497,7 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
 
     protected void processMessageFlows(BpmnModel model, ArrayNode shapesArrayNode) {
         for (MessageFlow messageFlow : model.getMessageFlows().values()) {
-            MessageFlowJsonConverter jsonConverter = new MessageFlowJsonConverter();
+            MessageFlowJsonConverter jsonConverter = new MessageFlowJsonConverter(this.jsonMapper);
             jsonConverter.convertToJson(messageFlow, this, model, null, shapesArrayNode, 0.0, 0.0);
         }
     }
@@ -594,7 +600,7 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
                         signal.setId(signalId);
                         signal.setName(signalName);
                         signal.setScope(
-                            (signalScope.toLowerCase().equals("processinstance"))
+                            signalScope.toLowerCase().equals("processinstance")
                                 ? Signal.SCOPE_PROCESS_INSTANCE
                                 : Signal.SCOPE_GLOBAL
                         );
@@ -666,7 +672,7 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
                     );
                     if (sourceRef != null) {
                         Lane lane = elementInLaneMap.get(sourceRef);
-                        SequenceFlowJsonConverter flowConverter = new SequenceFlowJsonConverter();
+                        SequenceFlowJsonConverter flowConverter = new SequenceFlowJsonConverter(this.jsonMapper);
                         if (lane != null) {
                             flowConverter.convertToBpmnModel(shapeNode, modelNode, this, lane, shapeMap, bpmnModel);
                         } else {
@@ -760,7 +766,9 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
             String stencilId = BpmnJsonConverterUtil.getStencilId(shapeNode);
             Class<? extends BaseBpmnJsonConverter> converter = convertersToBpmnMap.get(stencilId);
             try {
-                BaseBpmnJsonConverter converterInstance = converter.getDeclaredConstructor().newInstance();
+                BaseBpmnJsonConverter converterInstance = converter
+                    .getDeclaredConstructor(JsonMapper.class)
+                    .newInstance(this.jsonMapper);
                 if (converterInstance instanceof DecisionTableAwareConverter) {
                     ((DecisionTableAwareConverter) converterInstance).setDecisionTableMap(decisionTableMap);
                 }
@@ -1085,11 +1093,23 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
                     graphicInfoList.add(createGraphicInfo(x, y));
                 }
 
-                double startLastLineX = dockersNode.get(dockersNode.size() - 2).get(EDITOR_BOUNDS_X).asDouble();
-                double startLastLineY = dockersNode.get(dockersNode.size() - 2).get(EDITOR_BOUNDS_Y).asDouble();
+                double startLastLineX = dockersNode
+                    .get(dockersNode.size() - 2)
+                    .get(EDITOR_BOUNDS_X)
+                    .asDouble();
+                double startLastLineY = dockersNode
+                    .get(dockersNode.size() - 2)
+                    .get(EDITOR_BOUNDS_Y)
+                    .asDouble();
 
-                double endLastLineX = dockersNode.get(dockersNode.size() - 1).get(EDITOR_BOUNDS_X).asDouble();
-                double endLastLineY = dockersNode.get(dockersNode.size() - 1).get(EDITOR_BOUNDS_Y).asDouble();
+                double endLastLineX = dockersNode
+                    .get(dockersNode.size() - 1)
+                    .get(EDITOR_BOUNDS_X)
+                    .asDouble();
+                double endLastLineY = dockersNode
+                    .get(dockersNode.size() - 1)
+                    .get(EDITOR_BOUNDS_Y)
+                    .asDouble();
 
                 endLastLineX += targetInfo.getX();
                 endLastLineY += targetInfo.getY();
@@ -1103,8 +1123,14 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
             if (DI_RECTANGLES.contains(targetRefStencilId)) {
                 target2D = createRectangle(targetInfo);
             } else if (DI_CIRCLES.contains(targetRefStencilId)) {
-                double targetDockersX = dockersNode.get(dockersNode.size() - 1).get(EDITOR_BOUNDS_X).asDouble();
-                double targetDockersY = dockersNode.get(dockersNode.size() - 1).get(EDITOR_BOUNDS_Y).asDouble();
+                double targetDockersX = dockersNode
+                    .get(dockersNode.size() - 1)
+                    .get(EDITOR_BOUNDS_X)
+                    .asDouble();
+                double targetDockersY = dockersNode
+                    .get(dockersNode.size() - 1)
+                    .get(EDITOR_BOUNDS_Y)
+                    .asDouble();
 
                 target2D = new Circle2D(
                     targetInfo.getX() + targetDockersX,
@@ -1141,8 +1167,8 @@ public class BpmnJsonConverter implements EditorJsonConstants, StencilConstants,
     }
 
     private Polyline2D createGateway(GraphicInfo graphicInfo) {
-        double middleX = graphicInfo.getX() + (graphicInfo.getWidth() / 2);
-        double middleY = graphicInfo.getY() + (graphicInfo.getHeight() / 2);
+        double middleX = graphicInfo.getX() + graphicInfo.getWidth() / 2;
+        double middleY = graphicInfo.getY() + graphicInfo.getHeight() / 2;
 
         Polyline2D gatewayRectangle = new Polyline2D(
             new Point2D(graphicInfo.getX(), middleY),

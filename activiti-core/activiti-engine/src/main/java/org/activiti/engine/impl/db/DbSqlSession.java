@@ -28,6 +28,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -79,7 +80,6 @@ public class DbSqlSession implements Session {
 
     static {
         /* Previous */
-
         ACTIVITI_VERSIONS.add(new ActivitiVersion("5.7"));
         ACTIVITI_VERSIONS.add(new ActivitiVersion("5.8"));
         ACTIVITI_VERSIONS.add(new ActivitiVersion("5.9"));
@@ -144,6 +144,9 @@ public class DbSqlSession implements Session {
         ACTIVITI_VERSIONS.add(new ActivitiVersion("8.0.0"));
         ACTIVITI_VERSIONS.add(new ActivitiVersion("8.1.0"));
         ACTIVITI_VERSIONS.add(new ActivitiVersion("8.1.3"));
+        ACTIVITI_VERSIONS.add(new ActivitiVersion("8.1.4"));
+        ACTIVITI_VERSIONS.add(new ActivitiVersion("8.1.5"));
+        ACTIVITI_VERSIONS.add(new ActivitiVersion("9.1.0"));
         ACTIVITI_VERSIONS.add(new ActivitiVersion(ProcessEngine.VERSION));
     }
 
@@ -573,14 +576,21 @@ public class DbSqlSession implements Session {
     }
 
     protected void flushInsertEntities(Class<? extends Entity> entityClass, Collection<Entity> entitiesToInsert) {
-        if (entitiesToInsert.size() == 1) {
-            flushRegularInsert(entitiesToInsert.iterator().next(), entityClass);
+        Collection<Entity> orderedInserts = entitiesToInsert;
+        if (!ExecutionEntity.class.isAssignableFrom(entityClass) && entitiesToInsert.size() > 1) {
+            List<Entity> sortedInserts = new ArrayList<>(entitiesToInsert);
+            sortedInserts.sort(Comparator.comparing(Entity::getId));
+            orderedInserts = sortedInserts;
+        }
+
+        if (orderedInserts.size() == 1) {
+            flushRegularInsert(orderedInserts.iterator().next(), entityClass);
         } else if (Boolean.FALSE.equals(dbSqlSessionFactory.isBulkInsertable(entityClass))) {
-            for (Entity entity : entitiesToInsert) {
+            for (Entity entity : orderedInserts) {
                 flushRegularInsert(entity, entityClass);
             }
         } else {
-            flushBulkInsert(entitiesToInsert, entityClass);
+            flushBulkInsert(orderedInserts, entityClass);
         }
     }
 
@@ -589,7 +599,6 @@ public class DbSqlSession implements Session {
         boolean parentBeforeChildExecution
     ) {
         // For insertion: parent executions should go before child executions
-
         List<Entity> result = new ArrayList<Entity>(executionEntities.size());
 
         // Gather parent-child relationships
@@ -751,6 +760,14 @@ public class DbSqlSession implements Session {
     }
 
     protected void flushUpdates() {
+        updatedObjects.sort(
+            Comparator.comparingInt((Entity e) ->
+                EntityDependencyOrder.UPDATE_ORDER.getOrDefault(e.getClass(), Integer.MAX_VALUE)
+            )
+                .thenComparing(e -> e.getClass().getName())
+                .thenComparing(Entity::getId)
+        );
+
         for (Entity updatedObject : updatedObjects) {
             String updateStatement = dbSqlSessionFactory.getUpdateStatement(updatedObject);
             updateStatement = dbSqlSessionFactory.mapStatement(updateStatement);
@@ -812,7 +829,14 @@ public class DbSqlSession implements Session {
     }
 
     protected void flushDeleteEntities(Class<? extends Entity> entityClass, Collection<Entity> entitiesToDelete) {
-        for (Entity entity : entitiesToDelete) {
+        Collection<Entity> orderedDeletes = entitiesToDelete;
+        if (!ExecutionEntity.class.isAssignableFrom(entityClass) && entitiesToDelete.size() > 1) {
+            List<Entity> sortedDeletes = new ArrayList<>(entitiesToDelete);
+            sortedDeletes.sort(Comparator.comparing(Entity::getId));
+            orderedDeletes = sortedDeletes;
+        }
+
+        for (Entity entity : orderedDeletes) {
             String deleteStatement = dbSqlSessionFactory.getDeleteStatement(entity.getClass());
             deleteStatement = dbSqlSessionFactory.mapStatement(deleteStatement);
             if (deleteStatement == null) {
@@ -967,7 +991,7 @@ public class DbSqlSession implements Session {
                 }
             }
 
-            isUpgradeNeeded = (matchingVersionIndex != (ACTIVITI_VERSIONS.size() - 1));
+            isUpgradeNeeded = matchingVersionIndex != ACTIVITI_VERSIONS.size() - 1;
 
             if (isUpgradeNeeded) {
                 dbVersionProperty.setValue(ProcessEngine.VERSION);
@@ -1199,9 +1223,9 @@ public class DbSqlSession implements Session {
                     } catch (ActivitiException e) {
                         throw new ActivitiException(
                             "database update java class '" +
-                            upgradestepClassName +
-                            "' can't be instantiated: " +
-                            e.getMessage(),
+                                upgradestepClassName +
+                                "' can't be instantiated: " +
+                                e.getMessage(),
                             e
                         );
                     }
@@ -1211,9 +1235,9 @@ public class DbSqlSession implements Session {
                     } catch (Exception e) {
                         throw new ActivitiException(
                             "error while executing database update java class '" +
-                            upgradestepClassName +
-                            "': " +
-                            e.getMessage(),
+                                upgradestepClassName +
+                                "': " +
+                                e.getMessage(),
                             e
                         );
                     }
@@ -1304,22 +1328,22 @@ public class DbSqlSession implements Session {
         String exceptionMessage = e.getMessage();
         if (e.getMessage() != null) {
             // Matches message returned from H2
-            if ((exceptionMessage.indexOf("Table") != -1) && (exceptionMessage.indexOf("not found") != -1)) {
+            if (exceptionMessage.indexOf("Table") != -1 && exceptionMessage.indexOf("not found") != -1) {
                 return true;
             }
 
             // Message returned from MySQL and Oracle
             if (
-                ((exceptionMessage.indexOf("Table") != -1 || exceptionMessage.indexOf("table") != -1)) &&
-                (exceptionMessage.indexOf("doesn't exist") != -1)
+                (exceptionMessage.indexOf("Table") != -1 || exceptionMessage.indexOf("table") != -1) &&
+                exceptionMessage.indexOf("doesn't exist") != -1
             ) {
                 return true;
             }
 
             // Message returned from Postgres
             if (
-                ((exceptionMessage.indexOf("relation") != -1 || exceptionMessage.indexOf("table") != -1)) &&
-                (exceptionMessage.indexOf("does not exist") != -1)
+                (exceptionMessage.indexOf("relation") != -1 || exceptionMessage.indexOf("table") != -1) &&
+                exceptionMessage.indexOf("does not exist") != -1
             ) {
                 return true;
             }

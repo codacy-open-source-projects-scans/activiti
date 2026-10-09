@@ -36,10 +36,12 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 import org.springframework.transaction.PlatformTransactionManager;
+import tools.jackson.databind.json.JsonMapper;
 
 public class SpringProcessEngineConfiguration
     extends ProcessEngineConfigurationImpl
-    implements ApplicationContextAware {
+    implements ApplicationContextAware
+{
 
     protected PlatformTransactionManager transactionManager;
     protected String deploymentName = "SpringAutoDeployment";
@@ -51,10 +53,14 @@ public class SpringProcessEngineConfiguration
     private DefaultAutoDeploymentStrategy defaultAutoDeploymentStrategy;
 
     public SpringProcessEngineConfiguration() {
-        this(null);
+        this(null, JsonMapper.builder().build());
     }
 
-    public SpringProcessEngineConfiguration(ApplicationUpgradeContextService applicationUpgradeContextService) {
+    public SpringProcessEngineConfiguration(
+        ApplicationUpgradeContextService applicationUpgradeContextService,
+        JsonMapper jsonMapper
+    ) {
+        super(jsonMapper);
         this.transactionsExternallyManaged = true;
         defaultAutoDeploymentStrategy = new DefaultAutoDeploymentStrategy(applicationUpgradeContextService);
         deploymentStrategies.add(defaultAutoDeploymentStrategy);
@@ -97,8 +103,8 @@ public class SpringProcessEngineConfiguration
         if (transactionManager == null) {
             throw new ActivitiException(
                 "transactionManager is required property for SpringProcessEngineConfiguration, use " +
-                StandaloneProcessEngineConfiguration.class.getName() +
-                " otherwise"
+                    StandaloneProcessEngineConfiguration.class.getName() +
+                    " otherwise"
             );
         }
 
@@ -108,8 +114,10 @@ public class SpringProcessEngineConfiguration
     @Override
     public void initTransactionContextFactory() {
         if (transactionContextFactory == null && transactionManager != null) {
-            transactionContextFactory =
-                new SpringTransactionContextFactory(transactionManager, transactionSynchronizationAdapterOrder);
+            transactionContextFactory = new SpringTransactionContextFactory(
+                transactionManager,
+                transactionSynchronizationAdapterOrder
+            );
         }
     }
 

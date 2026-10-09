@@ -30,8 +30,6 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import tools.jackson.databind.json.JsonMapper;
-import tools.jackson.databind.node.NullNode;
 import java.io.File;
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -46,6 +44,7 @@ import org.activiti.core.el.ActivitiElContext;
 import org.activiti.core.el.CustomFunctionProvider;
 import org.activiti.engine.ActivitiIllegalArgumentException;
 import org.activiti.engine.delegate.DelegateExecution;
+import org.activiti.engine.impl.bpmn.behavior.MappingExecutionContext;
 import org.activiti.engine.impl.persistence.entity.VariableInstanceEntityImpl;
 import org.activiti.engine.impl.variable.StringType;
 import org.activiti.spring.process.ProcessExtensionService;
@@ -65,6 +64,8 @@ import org.mockito.quality.Strictness;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.util.ReflectionTestUtils;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.node.NullNode;
 
 @ExtendWith(MockitoExtension.class)
 @MockitoSettings(strictness = Strictness.LENIENT)
@@ -532,7 +533,6 @@ public class ExtensionsVariablesMappingProviderTest {
         Map<String, Object> expectedAddress6 = Map.of("street", "456 Elm St", "propertyFromVariable", "Street Name");
         Map<String, Object> expectedAddress7 = Map.of("street", "100 Replaced address");
 
-
         assertThat(outputVariables).isNotEmpty();
         assertThat(outputVariables.entrySet())
             .extracting(Map.Entry::getKey, Map.Entry::getValue)
@@ -559,7 +559,7 @@ public class ExtensionsVariablesMappingProviderTest {
                         "firstname",
                         "Bob",
                         "addresses",
-                        List.of(expectedAddress0, expectedAddress2,expectedAddress7, expectedAddress3)
+                        List.of(expectedAddress0, expectedAddress2, expectedAddress7, expectedAddress3)
                     )
                 ),
                 tuple(
@@ -884,12 +884,20 @@ public class ExtensionsVariablesMappingProviderTest {
             "Process_expressionMappingOutputValue"
         );
 
-        assertThatExceptionOfType(ActivitiIllegalArgumentException.class).isThrownBy(() ->
-            variablesMappingProvider.calculateOutPutVariables(
-                buildMappingExecutionContext(execution),
-                map("task_input_variable_name_1", "variable_value_1", "task_input_variable_name_2", "${expression}")
-            )
+        MappingExecutionContext mappingExecutionContext = buildMappingExecutionContext(execution);
+        Map<String, Object> availableVariables = map(
+            "task_input_variable_name_1",
+            "variable_value_1",
+            "task_input_variable_name_2",
+            "${expression}"
         );
+
+        assertThatExceptionOfType(ActivitiIllegalArgumentException.class)
+            .isThrownBy(() ->
+                variablesMappingProvider.calculateOutPutVariables(mappingExecutionContext, availableVariables)
+            )
+            .withMessageContaining("Expressions are not allowed as variable values in the output mapping")
+            .withMessageContaining("task_input_variable_name_2");
     }
 
     @Test
@@ -900,12 +908,20 @@ public class ExtensionsVariablesMappingProviderTest {
             "Process_expressionMappingOutputValue"
         );
 
-        assertThatExceptionOfType(ActivitiIllegalArgumentException.class).isThrownBy(() ->
-            variablesMappingProvider.calculateOutPutVariables(
-                buildMappingExecutionContext(execution),
-                map("task_input_variable_name_1", "variable_value_1", "task_input_variable_name_2", "${expression}")
-            )
+        MappingExecutionContext mappingExecutionContext = buildMappingExecutionContext(execution);
+        Map<String, Object> availableVariables = map(
+            "task_input_variable_name_1",
+            "variable_value_1",
+            "task_input_variable_name_2",
+            "${expression}"
         );
+
+        assertThatExceptionOfType(ActivitiIllegalArgumentException.class)
+            .isThrownBy(() ->
+                variablesMappingProvider.calculateOutPutVariables(mappingExecutionContext, availableVariables)
+            )
+            .withMessageContaining("Expressions are not allowed as variable values in the output mapping")
+            .withMessageContaining("task_input_variable_name_2");
     }
 
     @Test
@@ -1024,7 +1040,7 @@ public class ExtensionsVariablesMappingProviderTest {
         Map<String, Object> entityVariables = singletonMap("task_output_variable_name_1", "var-one");
 
         ExpressionResolverHelper.setExecutionVariables(execution, entityVariables);
-        given(execution.getVariable("process_variable_outputmap_1")).willReturn(("process-value"));
+        given(execution.getVariable("process_variable_outputmap_1")).willReturn("process-value");
 
         Map<String, Object> outputVariables = variablesMappingProvider.calculateOutPutVariables(
             buildMappingExecutionContext(execution),
@@ -1110,9 +1126,8 @@ public class ExtensionsVariablesMappingProviderTest {
         );
         Extension processExtensions = extensions.getExtensions("Process_taskVarMapping");
         DelegateExecution executionEphemeralTask = buildExecution(processExtensions, "ephemeralTask");
-        DelegateExecution implicitNonEphemeralTask= buildExecution(processExtensions, "implicitNonEphemeralTask");
-        DelegateExecution explicitNonEphemeralTask= buildExecution(processExtensions, "explicitNonEphemeralTask");
-
+        DelegateExecution implicitNonEphemeralTask = buildExecution(processExtensions, "implicitNonEphemeralTask");
+        DelegateExecution explicitNonEphemeralTask = buildExecution(processExtensions, "explicitNonEphemeralTask");
 
         //then
         assertThat(variablesMappingProvider.isMappingEphemeral(executionEphemeralTask)).isTrue();

@@ -717,17 +717,21 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
         );
     }
 
-    @Deployment(resources = {"org/activiti/standalone/history/FullHistoryTest.testHistoricTaskInstanceVariableUpdates.bpmn20.xml"})
+    @Deployment(
+        resources = {
+            "org/activiti/standalone/history/FullHistoryTest.testHistoricTaskInstanceVariableUpdates.bpmn20.xml",
+        }
+    )
     public void testHistoricTaskInstanceWithMaxResults() {
         // GIVEN: 5 running process
-        for (int i=0;i<5;i++) {
+        for (int i = 0; i < 5; i++) {
             runtimeService.startProcessInstanceByKey("HistoricTaskInstanceTest");
         }
 
         final HistoricTaskInstanceQuery query = historyService.createHistoricTaskInstanceQuery();
         // WHEN: listing, at most, 3 running process instances
         // THEN: the result must have 3 results
-        assertThat(query.listPage(0,3)).hasSize(3);
+        assertThat(query.listPage(0, 3)).hasSize(3);
         // THEN: total number of process instances is 5
         assertThat(query.count()).isEqualTo(5);
     }
@@ -878,7 +882,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricTaskInstanceQuery().taskVariableValueEquals("longVar", 12345L).count()
         ).isEqualTo(1);
         assertThat(
-            historyService.createHistoricTaskInstanceQuery().taskVariableValueEquals("shortVar", (short) 123).count()
+            historyService
+                .createHistoricTaskInstanceQuery()
+                .taskVariableValueEquals("shortVar", (short) 123)
+                .count()
         ).isEqualTo(1);
         assertThat(
             historyService.createHistoricTaskInstanceQuery().taskVariableValueEquals("integerVar", 1234).count()
@@ -920,7 +927,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricTaskInstanceQuery().taskVariableValueEquals("longVar", 12345L).count()
         ).isEqualTo(0);
         assertThat(
-            historyService.createHistoricTaskInstanceQuery().taskVariableValueEquals("shortVar", (short) 123).count()
+            historyService
+                .createHistoricTaskInstanceQuery()
+                .taskVariableValueEquals("shortVar", (short) 123)
+                .count()
         ).isEqualTo(0);
         assertThat(
             historyService.createHistoricTaskInstanceQuery().taskVariableValueEquals("integerVar", 1234).count()
@@ -940,7 +950,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricTaskInstanceQuery().taskVariableValueEquals("longVar", 67890L).count()
         ).isEqualTo(1);
         assertThat(
-            historyService.createHistoricTaskInstanceQuery().taskVariableValueEquals("shortVar", (short) 456).count()
+            historyService
+                .createHistoricTaskInstanceQuery()
+                .taskVariableValueEquals("shortVar", (short) 456)
+                .count()
         ).isEqualTo(1);
         assertThat(
             historyService.createHistoricTaskInstanceQuery().taskVariableValueEquals("integerVar", 5678).count()
@@ -995,7 +1008,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricTaskInstanceQuery().processVariableValueEquals("longVar", 12345L).count()
         ).isEqualTo(1);
         assertThat(
-            historyService.createHistoricTaskInstanceQuery().processVariableValueEquals("shortVar", (short) 123).count()
+            historyService
+                .createHistoricTaskInstanceQuery()
+                .processVariableValueEquals("shortVar", (short) 123)
+                .count()
         ).isEqualTo(1);
         assertThat(
             historyService.createHistoricTaskInstanceQuery().processVariableValueEquals("integerVar", 1234).count()
@@ -1044,7 +1060,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricTaskInstanceQuery().processVariableValueEquals("longVar", 12345L).count()
         ).isEqualTo(0);
         assertThat(
-            historyService.createHistoricTaskInstanceQuery().processVariableValueEquals("shortVar", (short) 123).count()
+            historyService
+                .createHistoricTaskInstanceQuery()
+                .processVariableValueEquals("shortVar", (short) 123)
+                .count()
         ).isEqualTo(0);
         assertThat(
             historyService.createHistoricTaskInstanceQuery().processVariableValueEquals("integerVar", 1234).count()
@@ -1067,7 +1086,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricTaskInstanceQuery().processVariableValueEquals("longVar", 67890L).count()
         ).isEqualTo(1);
         assertThat(
-            historyService.createHistoricTaskInstanceQuery().processVariableValueEquals("shortVar", (short) 456).count()
+            historyService
+                .createHistoricTaskInstanceQuery()
+                .processVariableValueEquals("shortVar", (short) 456)
+                .count()
         ).isEqualTo(1);
         assertThat(
             historyService.createHistoricTaskInstanceQuery().processVariableValueEquals("integerVar", 5678).count()
@@ -1130,7 +1152,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricProcessInstanceQuery().variableValueEquals("longVar", 12345L).count()
         ).isEqualTo(1);
         assertThat(
-            historyService.createHistoricProcessInstanceQuery().variableValueEquals("shortVar", (short) 123).count()
+            historyService
+                .createHistoricProcessInstanceQuery()
+                .variableValueEquals("shortVar", (short) 123)
+                .count()
         ).isEqualTo(1);
         assertThat(
             historyService.createHistoricProcessInstanceQuery().variableValueEquals("integerVar", 1234).count()
@@ -1176,7 +1201,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricProcessInstanceQuery().variableValueEquals("longVar", 12345L).count()
         ).isEqualTo(0);
         assertThat(
-            historyService.createHistoricProcessInstanceQuery().variableValueEquals("shortVar", (short) 123).count()
+            historyService
+                .createHistoricProcessInstanceQuery()
+                .variableValueEquals("shortVar", (short) 123)
+                .count()
         ).isEqualTo(0);
         assertThat(
             historyService.createHistoricProcessInstanceQuery().variableValueEquals("integerVar", 1234).count()
@@ -1196,7 +1224,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricProcessInstanceQuery().variableValueEquals("longVar", 67890L).count()
         ).isEqualTo(1);
         assertThat(
-            historyService.createHistoricProcessInstanceQuery().variableValueEquals("shortVar", (short) 456).count()
+            historyService
+                .createHistoricProcessInstanceQuery()
+                .variableValueEquals("shortVar", (short) 456)
+                .count()
         ).isEqualTo(1);
         assertThat(
             historyService.createHistoricProcessInstanceQuery().variableValueEquals("integerVar", 5678).count()
@@ -1257,7 +1288,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("longVar", 12345L).count()
         ).isEqualTo(0);
         assertThat(
-            historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("shortVar", (short) 123).count()
+            historyService
+                .createHistoricProcessInstanceQuery()
+                .variableValueNotEquals("shortVar", (short) 123)
+                .count()
         ).isEqualTo(0);
         assertThat(
             historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("integerVar", 1234).count()
@@ -1285,7 +1319,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("longVar", 67890L).count()
         ).isEqualTo(1);
         assertThat(
-            historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("shortVar", (short) 456).count()
+            historyService
+                .createHistoricProcessInstanceQuery()
+                .variableValueNotEquals("shortVar", (short) 456)
+                .count()
         ).isEqualTo(1);
         assertThat(
             historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("integerVar", 5678).count()
@@ -1327,7 +1364,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("longVar", 12345L).count()
         ).isEqualTo(1);
         assertThat(
-            historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("shortVar", (short) 123).count()
+            historyService
+                .createHistoricProcessInstanceQuery()
+                .variableValueNotEquals("shortVar", (short) 123)
+                .count()
         ).isEqualTo(1);
         assertThat(
             historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("integerVar", 1234).count()
@@ -1349,7 +1389,10 @@ public class FullHistoryTest extends ResourceActivitiTestCase {
             historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("longVar", 67890L).count()
         ).isEqualTo(0);
         assertThat(
-            historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("shortVar", (short) 456).count()
+            historyService
+                .createHistoricProcessInstanceQuery()
+                .variableValueNotEquals("shortVar", (short) 456)
+                .count()
         ).isEqualTo(0);
         assertThat(
             historyService.createHistoricProcessInstanceQuery().variableValueNotEquals("integerVar", 5678).count()

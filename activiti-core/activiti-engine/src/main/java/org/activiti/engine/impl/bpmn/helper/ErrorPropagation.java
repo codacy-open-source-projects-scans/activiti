@@ -52,7 +52,8 @@ public class ErrorPropagation {
         try {
             Map<String, List<Event>> eventMap = findCatchingEventsForProcess(
                 execution.getProcessDefinitionId(),
-                new Error(errorRef));
+                new Error(errorRef)
+            );
 
             if (!eventMap.isEmpty()) {
                 isCatchExecutedForProcess = executeCatch(eventMap, execution, new Error(errorRef));
@@ -66,8 +67,8 @@ public class ErrorPropagation {
                 throw new BpmnError(
                     errorRef,
                     "No catching boundary event found for error with errorCode '" +
-                    errorRef +
-                    "', neither in same process nor in parent process"
+                        errorRef +
+                        "', neither in same process nor in parent process"
                 );
             }
         }
@@ -76,7 +77,8 @@ public class ErrorPropagation {
     protected static boolean executeCatch(
         Map<String, List<Event>> eventMap,
         DelegateExecution delegateExecution,
-        Error error) {
+        Error error
+    ) {
         Event matchingEvent = null;
         ExecutionEntity currentExecution = (ExecutionEntity) delegateExecution;
         ExecutionEntity parentExecution = null;
@@ -104,7 +106,11 @@ public class ErrorPropagation {
 
                 for (String refId : eventMap.keySet()) {
                     List<Event> events = eventMap.get(refId);
-                    if (matchingEvent == null && CollectionUtil.isNotEmpty(events) && events.getFirst() instanceof StartEvent) {
+                    if (
+                        matchingEvent == null &&
+                        CollectionUtil.isNotEmpty(events) &&
+                        events.getFirst() instanceof StartEvent
+                    ) {
                         if (currentContainer.getFlowElement(refId) != null) {
                             matchingEvent = events.getFirst();
                         }
@@ -160,7 +166,10 @@ public class ErrorPropagation {
         toDeleteProcessInstanceIds.add(execution.getProcessInstanceId());
 
         while (!parentExecution.isRootExecution()) {
-            Map<String, List<Event>> eventMap = findCatchingEventsForProcess(parentExecution.getProcessDefinitionId(), error);
+            Map<String, List<Event>> eventMap = findCatchingEventsForProcess(
+                parentExecution.getProcessDefinitionId(),
+                error
+            );
             if (!eventMap.isEmpty()) {
                 for (String processInstanceId : toDeleteProcessInstanceIds) {
                     deleteProcessInstanceEntity(errorRef, execution, executionEntityManager, processInstanceId);
@@ -221,16 +230,16 @@ public class ErrorPropagation {
         Event event,
         ExecutionEntity parentExecution,
         ExecutionEntity currentExecution,
-        Error error) {
+        Error error
+    ) {
         if (
             Context.getProcessEngineConfiguration() != null &&
             Context.getProcessEngineConfiguration().getEventDispatcher().isEnabled()
         ) {
             BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(parentExecution.getProcessDefinitionId());
             if (bpmnModel != null) {
-                String resolvedErrorCode = error.getErrorCode() != null
-                    ? error.getErrorCode()
-                    : retrieveErrorCode(bpmnModel, error.getId());
+                String resolvedErrorCode =
+                    error.getErrorCode() != null ? error.getErrorCode() : retrieveErrorCode(bpmnModel, error.getId());
 
                 Context.getProcessEngineConfiguration()
                     .getEventDispatcher()
@@ -273,14 +282,13 @@ public class ErrorPropagation {
         }
     }
 
-    protected static Map<String, List<Event>> findCatchingEventsForProcess(
-        String processDefinitionId,
-        Error error) {
+    protected static Map<String, List<Event>> findCatchingEventsForProcess(String processDefinitionId, Error error) {
         Map<String, List<Event>> eventMap = new LinkedHashMap<>();
         Process process = ProcessDefinitionUtil.getProcess(processDefinitionId);
         BpmnModel bpmnModel = ProcessDefinitionUtil.getBpmnModel(processDefinitionId);
 
-        String compareErrorCode = error.getErrorCode() != null ? error.getErrorCode() : retrieveErrorCode(bpmnModel, error.getId());
+        String compareErrorCode =
+            error.getErrorCode() != null ? error.getErrorCode() : retrieveErrorCode(bpmnModel, error.getId());
 
         eventMap.putAll(findCatchingEventSubprocesses(process, bpmnModel, compareErrorCode));
 

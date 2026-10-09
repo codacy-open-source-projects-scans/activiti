@@ -15,6 +15,9 @@
  */
 package org.activiti.engine.impl.persistence.entity.data.integration;
 
+import java.util.List;
+import org.activiti.engine.impl.IntegrationContextQueryImpl;
+import org.activiti.engine.impl.Page;
 import org.activiti.engine.impl.cfg.ProcessEngineConfigurationImpl;
 import org.activiti.engine.impl.persistence.entity.data.AbstractDataManager;
 import org.activiti.engine.impl.persistence.entity.integration.IntegrationContextEntity;
@@ -22,7 +25,8 @@ import org.activiti.engine.impl.persistence.entity.integration.IntegrationContex
 
 public class MybatisIntegrationContextDataManager
     extends AbstractDataManager<IntegrationContextEntity>
-    implements IntegrationContextDataManager {
+    implements IntegrationContextDataManager
+{
 
     public MybatisIntegrationContextDataManager(ProcessEngineConfigurationImpl processEngineConfiguration) {
         super(processEngineConfiguration);
@@ -36,5 +40,16 @@ public class MybatisIntegrationContextDataManager
     @Override
     public Class<? extends IntegrationContextEntity> getManagedEntityClass() {
         return IntegrationContextEntityImpl.class;
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<IntegrationContextEntity> findByQueryCriteria(IntegrationContextQueryImpl query, Page page) {
+        return getDbSqlSession().selectList("selectIntegrationContextByQueryCriteria", query, page);
+    }
+
+    @Override
+    public long findCountByQueryCriteria(IntegrationContextQueryImpl query) {
+        return (Long) getDbSqlSession().selectOne("selectIntegrationContextCountByQueryCriteria", query);
     }
 }

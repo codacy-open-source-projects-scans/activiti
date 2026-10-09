@@ -15,8 +15,6 @@
  */
 package org.activiti.engine.impl;
 
-import tools.jackson.databind.JsonNode;
-import tools.jackson.databind.node.ObjectNode;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -34,6 +32,8 @@ import org.activiti.engine.task.Task;
 import org.activiti.engine.task.TaskQuery;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.node.ObjectNode;
 
 /**
 
@@ -353,7 +353,7 @@ public class TaskQueryImpl extends AbstractVariableQueryImpl<TaskQuery, Task> im
             throw new ActivitiIllegalArgumentException("AssigneeLike is null");
         }
         if (orActive) {
-            currentOrQueryObject.assigneeLike = assignee;
+            currentOrQueryObject.assigneeLike = assigneeLike;
         } else {
             this.assigneeLike = assigneeLike;
         }
@@ -1454,7 +1454,7 @@ public class TaskQueryImpl extends AbstractVariableQueryImpl<TaskQuery, Task> im
     }
 
     public String getDelegationStateString() {
-        return (delegationState != null ? delegationState.toString() : null);
+        return delegationState != null ? delegationState.toString() : null;
     }
 
     public String getCandidateUser() {

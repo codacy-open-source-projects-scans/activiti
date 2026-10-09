@@ -17,7 +17,6 @@ package org.activiti.engine.impl.cfg;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import tools.jackson.databind.json.JsonMapper;
 import jakarta.el.ELResolver;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -335,6 +334,7 @@ import org.apache.ibatis.transaction.managed.ManagedTransactionFactory;
 import org.apache.ibatis.type.JdbcType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.databind.json.JsonMapper;
 
 public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfiguration {
 
@@ -830,8 +830,6 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
 
     public int DEFAULT_MAX_NR_OF_STATEMENTS_BULK_INSERT_SQL_SERVER = 70; // currently Execution has most params (28). 2000 / 28 = 71.
 
-    protected JsonMapper jsonMapper = new JsonMapper();
-
     /**
      * Flag that can be set to configure or nota relational database is used.
      * This is useful for custom implementations that do not use relational databases at all.
@@ -854,6 +852,16 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
     protected PerformanceSettings performanceSettings = new PerformanceSettings();
 
     protected ProcessDefinitionHelper processDefinitionHelper;
+
+    protected JsonMapper jsonMapper;
+
+    protected ProcessEngineConfigurationImpl() {
+        this(JsonMapper.builder().build());
+    }
+
+    protected ProcessEngineConfigurationImpl(JsonMapper jsonMapper) {
+        this.jsonMapper = jsonMapper;
+    }
 
     // buildProcessEngine
     // ///////////////////////////////////////////////////////
@@ -1051,7 +1059,7 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
                     );
                 }
             } else if (jdbcUrl != null) {
-                if ((jdbcDriver == null) || (jdbcUsername == null)) {
+                if (jdbcDriver == null || jdbcUsername == null) {
                     throw new ActivitiException(
                         "DataSource or JDBC properties have to be specified in a process engine configuration"
                     );
@@ -1216,7 +1224,7 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
                 Properties properties = new Properties();
                 properties.put("prefix", databaseTablePrefix);
                 String wildcardEscapeClause = "";
-                if ((databaseWildcardEscapeCharacter != null) && (databaseWildcardEscapeCharacter.length() != 0)) {
+                if (databaseWildcardEscapeCharacter != null && databaseWildcardEscapeCharacter.length() != 0) {
                     wildcardEscapeClause = " escape '" + databaseWildcardEscapeCharacter + "'";
                 }
                 properties.put("wildcardEscapeClause", wildcardEscapeClause);
@@ -1764,7 +1772,7 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
             defaultListenerFactory.setExpressionManager(expressionManager);
             listenerFactory = defaultListenerFactory;
         } else if (
-            (listenerFactory instanceof AbstractBehaviorFactory) &&
+            listenerFactory instanceof AbstractBehaviorFactory &&
             ((AbstractBehaviorFactory) listenerFactory).getExpressionManager() == null
         ) {
             ((AbstractBehaviorFactory) listenerFactory).setExpressionManager(expressionManager);
@@ -1777,7 +1785,7 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
             defaultActivityBehaviorFactory.setExpressionManager(expressionManager);
             activityBehaviorFactory = defaultActivityBehaviorFactory;
         } else if (
-            (activityBehaviorFactory instanceof AbstractBehaviorFactory) &&
+            activityBehaviorFactory instanceof AbstractBehaviorFactory &&
             ((AbstractBehaviorFactory) activityBehaviorFactory).getExpressionManager() == null
         ) {
             ((AbstractBehaviorFactory) activityBehaviorFactory).setExpressionManager(expressionManager);
@@ -1865,10 +1873,10 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
                     }
                     throw new ActivitiException(
                         "The default BPMN parse handlers should only support one type, but " +
-                        defaultBpmnParseHandler.getClass() +
-                        " supports " +
-                        supportedTypes.toString() +
-                        ". This is likely a programmatic error"
+                            defaultBpmnParseHandler.getClass() +
+                            " supports " +
+                            supportedTypes.toString() +
+                            ". This is likely a programmatic error"
                     );
                 } else {
                     Class<?> handledType = defaultBpmnParseHandler.getHandledTypes().iterator().next();
@@ -1876,9 +1884,9 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
                         BpmnParseHandler newBpmnParseHandler = customParseHandlerMap.get(handledType);
                         log.info(
                             "Replacing default BpmnParseHandler " +
-                            defaultBpmnParseHandler.getClass().getName() +
-                            " with " +
-                            newBpmnParseHandler.getClass().getName()
+                                defaultBpmnParseHandler.getClass().getName() +
+                                " with " +
+                                newBpmnParseHandler.getClass().getName()
                         );
                         bpmnParserHandlers.set(i, newBpmnParseHandler);
                     }
@@ -2034,8 +2042,11 @@ public abstract class ProcessEngineConfigurationImpl extends ProcessEngineConfig
             variableTypes.addType(new UUIDType());
             variableTypes.addType(new BigDecimalType());
 
-            jsonMapper = jsonMapper.rebuild()
-                .withConfigOverride(BigDecimal.class, o -> o.setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING)))
+            jsonMapper = jsonMapper
+                .rebuild()
+                .withConfigOverride(BigDecimal.class, o ->
+                    o.setFormat(JsonFormat.Value.forShape(JsonFormat.Shape.STRING))
+                )
                 .build();
             JsonTypeConverter jsonTypeConverter = new JsonTypeConverter(jsonMapper, javaClassFieldForJackson);
             variableTypes.addType(

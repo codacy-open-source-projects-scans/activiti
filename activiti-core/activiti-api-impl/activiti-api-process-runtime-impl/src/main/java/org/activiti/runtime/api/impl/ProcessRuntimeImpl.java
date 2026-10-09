@@ -161,8 +161,7 @@ public class ProcessRuntimeImpl implements ProcessRuntime {
     }
 
     private ProcessDefinitionQuery createProcessDefinitionQueryIncludingNoUserStartableProcesses() {
-        return repositoryService
-            .createProcessDefinitionQuery();
+        return repositoryService.createProcessDefinitionQuery();
     }
 
     private Optional<org.activiti.engine.repository.ProcessDefinition> findLatestProcessDefinition(
@@ -196,8 +195,8 @@ public class ProcessRuntimeImpl implements ProcessRuntime {
         if (appVersion != null && !selectLatestDeployment().getVersion().equals(appVersion)) {
             throw new UnprocessableEntityException(
                 "Process definition with the given id:'" +
-                processDefinition.getId() +
-                "' belongs to a different application version."
+                    processDefinition.getId() +
+                    "' belongs to a different application version."
             );
         }
     }
@@ -240,8 +239,7 @@ public class ProcessRuntimeImpl implements ProcessRuntime {
 
         ProcessDefinitionQuery processDefinitionQuery;
 
-
-        if (include.contains(NO_USER_STARTABLE_PROCESSES)){
+        if (include.contains(NO_USER_STARTABLE_PROCESSES)) {
             processDefinitionQuery = createProcessDefinitionQueryIncludingNoUserStartableProcesses()
                 .latestVersion()
                 .deploymentIds(latestDeploymentIds());
@@ -250,7 +248,6 @@ public class ProcessRuntimeImpl implements ProcessRuntime {
                 .latestVersion()
                 .deploymentIds(latestDeploymentIds());
         }
-
 
         if (getProcessDefinitionsPayload.hasDefinitionKeys()) {
             processDefinitionQuery.processDefinitionKeys(getProcessDefinitionsPayload.getProcessDefinitionKeys());
@@ -273,8 +270,8 @@ public class ProcessRuntimeImpl implements ProcessRuntime {
         if (!canReadProcessInstance(internalProcessInstance)) {
             throw new ActivitiObjectNotFoundException(
                 "You cannot read the process instance with Id:'" +
-                processInstanceId +
-                "' due to security policies violation"
+                    processInstanceId +
+                    "' due to security policies violation"
             );
         }
         return processInstanceConverter.from(internalProcessInstance);
@@ -359,8 +356,8 @@ public class ProcessRuntimeImpl implements ProcessRuntime {
         if (!canWriteProcessInstance(internalProcessInstance)) {
             throw new ActivitiObjectNotFoundException(
                 "You cannot start the process instance with Id:'" +
-                processInstanceId +
-                "' due to security policies violation"
+                    processInstanceId +
+                    "' due to security policies violation"
             );
         }
         processVariablesValidator.checkStartProcessPayloadVariables(
@@ -368,7 +365,12 @@ public class ProcessRuntimeImpl implements ProcessRuntime {
             internalProcessInstance.getProcessDefinitionId()
         );
         return processInstanceConverter.from(
-            runtimeService.startCreatedProcessInstance(internalProcessInstance, startProcessPayload.getVariables())
+            runtimeService.startCreatedProcessInstance(
+                internalProcessInstance,
+                startProcessPayload.getVariables(),
+                startProcessPayload.getLinkedProcessInstanceId(),
+                startProcessPayload.getLinkedProcessInstanceType()
+            )
         );
     }
 
@@ -600,8 +602,8 @@ public class ProcessRuntimeImpl implements ProcessRuntime {
         if (!canWriteProcessInstance(processInstance)) {
             throw new ActivitiForbiddenException(
                 "Operation not permitted for on process instance " +
-                processInstance.getProcessInstanceId() +
-                " due security policy violation"
+                    processInstance.getProcessInstanceId() +
+                    " due security policy violation"
             );
         }
     }

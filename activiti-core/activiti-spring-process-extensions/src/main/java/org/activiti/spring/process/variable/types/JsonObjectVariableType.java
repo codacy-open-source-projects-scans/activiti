@@ -15,12 +15,12 @@
  */
 package org.activiti.spring.process.variable.types;
 
-import tools.jackson.core.JacksonException;
-import tools.jackson.databind.json.JsonMapper;
 import java.util.List;
 import org.activiti.engine.ActivitiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.json.JsonMapper;
 
 public class JsonObjectVariableType extends VariableType {
 
@@ -42,6 +42,9 @@ public class JsonObjectVariableType extends VariableType {
 
     @Override
     public void validate(Object var, List<ActivitiException> errors) {
+        if (var == null) {
+            return;
+        }
         //we can consider var json so long as it can be stored as json
         //this doesn't guarantee a string body to be valid json as jackson will wrap a string to make it valid
         //also doesn't guarantee it will be persisted as json

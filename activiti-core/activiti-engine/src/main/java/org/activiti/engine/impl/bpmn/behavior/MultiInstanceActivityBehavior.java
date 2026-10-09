@@ -22,8 +22,11 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
 import org.activiti.bpmn.model.Activity;
 import org.activiti.bpmn.model.BoundaryEvent;
+import org.activiti.bpmn.model.CallActivity;
 import org.activiti.bpmn.model.CompensateEventDefinition;
 import org.activiti.bpmn.model.FlowElement;
 import org.activiti.bpmn.model.FlowNode;
@@ -36,7 +39,6 @@ import org.activiti.engine.delegate.Expression;
 import org.activiti.engine.delegate.event.ActivitiEventType;
 import org.activiti.engine.delegate.event.impl.ActivitiEventBuilder;
 import org.activiti.engine.impl.bpmn.helper.ErrorPropagation;
-import org.activiti.engine.impl.cmd.CompleteTaskCmd;
 import org.activiti.engine.impl.context.Context;
 import org.activiti.engine.impl.delegate.ActivityBehavior;
 import org.activiti.engine.impl.delegate.SubProcessActivityBehavior;
@@ -46,6 +48,7 @@ import org.activiti.engine.impl.util.CollectionUtil;
 import org.activiti.engine.impl.util.ProcessDefinitionUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.function.ThrowingConsumer;
 
 /**
  * Implementation of the multi-instance functionality as described in the BPMN 2.0 spec.
@@ -60,7 +63,8 @@ import org.slf4j.LoggerFactory;
  */
 public abstract class MultiInstanceActivityBehavior
     extends FlowNodeActivityBehavior
-    implements SubProcessActivityBehavior {
+    implements SubProcessActivityBehavior
+{
 
     private static final long serialVersionUID = 1L;
 
@@ -111,7 +115,9 @@ public abstract class MultiInstanceActivityBehavior
                 super.leave(execution);
             }
         } else {
-            getCommandContext().getHistoryManager().recordActivityStart((ExecutionEntity) execution);
+            getCommandContext()
+                .getHistoryManager()
+                .recordActivityStart((ExecutionEntity) execution);
 
             innerActivityBehavior.execute(execution);
         }
@@ -146,7 +152,7 @@ public abstract class MultiInstanceActivityBehavior
                     childExecutionEntity.setCurrentFlowElement(boundaryEvent);
                     childExecutionEntity.setScope(false);
 
-                    ActivityBehavior boundaryEventBehavior = ((ActivityBehavior) boundaryEvent.getBehavior());
+                    ActivityBehavior boundaryEventBehavior = (ActivityBehavior) boundaryEvent.getBehavior();
                     boundaryEventBehavior.execute(childExecutionEntity);
                 }
             }
@@ -189,7 +195,11 @@ public abstract class MultiInstanceActivityBehavior
     }
 
     // required for supporting external subprocesses
-    public void completing(DelegateExecution execution, DelegateExecution subProcessInstance) throws Exception {}
+    public void completing(DelegateExecution execution, DelegateExecution subProcessInstance) throws Exception {
+        Optional.ofNullable(execution)
+            .filter(isInnerSubProcessActivity().and(isCallActivityCurrentFlowElement()))
+            .ifPresent(completingSubProcessInstance(subProcessInstance));
+    }
 
     // required for supporting external subprocesses
     public void completed(DelegateExecution execution) throws Exception {
@@ -198,6 +208,19 @@ public abstract class MultiInstanceActivityBehavior
 
     // Helpers
     // //////////////////////////////////////////////////////////////////////
+
+    private Predicate<DelegateExecution> isCallActivityCurrentFlowElement() {
+        return execution -> execution.getCurrentFlowElement() instanceof CallActivity;
+    }
+
+    private Predicate<DelegateExecution> isInnerSubProcessActivity() {
+        return execution -> this.getInnerActivityBehavior() instanceof SubProcessActivityBehavior;
+    }
+
+    private ThrowingConsumer<DelegateExecution> completingSubProcessInstance(DelegateExecution subProcessInstance) {
+        return execution ->
+            SubProcessActivityBehavior.class.cast(innerActivityBehavior).completing(execution, subProcessInstance);
+    }
 
     @SuppressWarnings("rawtypes")
     protected int resolveNrOfInstances(DelegateExecution execution) {
@@ -281,8 +304,8 @@ public abstract class MultiInstanceActivityBehavior
         } else {
             throw new ActivitiIllegalArgumentException(
                 "Could not resolve loopCardinality expression '" +
-                loopCardinalityExpression.getExpressionText() +
-                "': not a number nor number String"
+                    loopCardinalityExpression.getExpressionText() +
+                    "': not a number nor number String"
             );
         }
     }
@@ -293,8 +316,8 @@ public abstract class MultiInstanceActivityBehavior
             if (!(value instanceof Boolean)) {
                 throw new ActivitiIllegalArgumentException(
                     "completionCondition '" +
-                    completionConditionExpression.getExpressionText() +
-                    "' does not evaluate to a boolean value"
+                        completionConditionExpression.getExpressionText() +
+                        "' does not evaluate to a boolean value"
                 );
             }
 

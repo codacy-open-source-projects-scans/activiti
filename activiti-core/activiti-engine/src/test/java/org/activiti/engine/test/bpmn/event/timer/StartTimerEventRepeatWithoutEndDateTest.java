@@ -87,9 +87,9 @@ public class StartTimerEventRepeatWithoutEndDateTest extends PluggableActivitiTe
         dueDateCalendar.set(2025, Calendar.DECEMBER, 11, 0, 0, 0);
 
         // check the due date is inside the 2 seconds range
-        assertThat(Math.abs(dueDateCalendar.getTime().getTime() - jobs.getFirst().getDuedate().getTime()) < 2000).isEqualTo(
-            true
-        );
+        assertThat(
+            Math.abs(dueDateCalendar.getTime().getTime() - jobs.getFirst().getDuedate().getTime()) < 2000
+        ).isEqualTo(true);
 
         // No process instances
         List<ProcessInstance> processInstances = runtimeService.createProcessInstanceQuery().list();
@@ -102,7 +102,7 @@ public class StartTimerEventRepeatWithoutEndDateTest extends PluggableActivitiTe
         // ADVANCE THE CLOCK
         // advance the clock after 9 days from starting the process ->
         // the system will execute the pending job and will create a new one (day by day)
-        moveByMinutes((9 * 60 * 24));
+        moveByMinutes(9 * 60 * 24);
         // because the poll for new jobs is done once per minute, we're going to wait the whole 10 seconds
         executeJobExecutorForTime(10000, 10000);
 
@@ -125,9 +125,9 @@ public class StartTimerEventRepeatWithoutEndDateTest extends PluggableActivitiTe
         // (10'th repeat after 10 dec. => dueDate must have DueDate = 20 dec.)
         dueDateCalendar = Calendar.getInstance();
         dueDateCalendar.set(2025, Calendar.DECEMBER, 20, 0, 0, 0);
-        assertThat(Math.abs(dueDateCalendar.getTime().getTime() - jobs.getFirst().getDuedate().getTime()) < 2000).isEqualTo(
-            true
-        );
+        assertThat(
+            Math.abs(dueDateCalendar.getTime().getTime() - jobs.getFirst().getDuedate().getTime()) < 2000
+        ).isEqualTo(true);
 
         // ADVANCE THE CLOCK SO that all 10 repeats to be executed
         // (last execution)
@@ -219,7 +219,7 @@ public class StartTimerEventRepeatWithoutEndDateTest extends PluggableActivitiTe
         processEngineConfiguration
             .getClock()
             .setCurrentTime(
-                new Date(processEngineConfiguration.getClock().getCurrentTime().getTime() + ((minutes * 60l * 1000)))
+                new Date(processEngineConfiguration.getClock().getCurrentTime().getTime() + minutes * 60l * 1000)
             );
     }
 }

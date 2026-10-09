@@ -13,6 +13,10 @@
   <artifactId>activiti-bpmn-model</artifactId>
   <name>Activiti :: BPMN Model</name>
 
+  <properties>
+    <mockito.agent.arg/>
+  </properties>
+
   <dependencies>
     <dependency>
       <groupId>org.apache.commons</groupId>
@@ -31,8 +35,8 @@
       <artifactId>jackson-databind</artifactId>
     </dependency>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
     <dependency>
